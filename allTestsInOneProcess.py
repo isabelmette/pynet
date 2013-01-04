@@ -1,9 +1,4 @@
-
-##
-##  akira player
-##
-
-from akiraplayer.test_logic import *
+#!/usr/bin/env python
 
 ##
 ##  process
