@@ -22,10 +22,11 @@ import select
 # due to an race-condition in test_reference
 # the process closes but does not close the pipe
 pipes_are_supported = False
+unix_is_supported = False
 
 has_ipv4 = hasattr(socket, 'AF_INET')
 has_ipv6 = socket.has_ipv6
-has_unix = 'AF_UNIX' in connection_families
+has_unix = 'AF_UNIX' in connection_families and unix_is_supported
 has_pipe = 'AF_PIPE' in connection_families and pipes_are_supported
 
 if has_pipe:

@@ -188,7 +188,7 @@ class HmacStreamTest(unittest.TestCase):
         self.communicate(10)
         self.assertEquals(self.h1.read(3), '123')
 
-    
+del HmacStreamTest
 
 if __name__ == '__main__':
     unittest.main(exit = False)

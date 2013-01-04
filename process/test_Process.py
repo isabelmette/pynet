@@ -160,15 +160,16 @@ class ProcessInOtherProcessTest(unittest.TestCase):
         self.assertFalse(self.p.isAlive())
 
     def test_establishConnectionFails(self):
-        self.p.addConnectionPossibility(ConnectionPossibility(setValue, (1,)))
+        s = set()
+        self.p.addConnectionPossibility(ConnectionPossibility(s.add, (1,)))
         c = self.p.newConnection()
         self.assertEquals(c, None)
-        self.assertEquals(value, 1)
-        self.p.addConnectionPossibility(ConnectionPossibility(setValue, (2,)))
-        self.p.addConnectionPossibility(ConnectionPossibility(setValue, (3,)))
+        self.assertEquals(s.pop(), 1)
+        self.p.addConnectionPossibility(ConnectionPossibility(s.add, (2,)))
+        self.p.addConnectionPossibility(ConnectionPossibility(s.add, (3,)))
         c = self.p.newConnection()
         self.assertEquals(c, None)
-        self.assertEquals(value, 3)
+        self.assertEquals(s, set((1,2,3)))
 
     def test_establishConnectionWorks(self):
         self.p.addConnectionPossibility(ConnectionPossibility(setValue, (1,)))
