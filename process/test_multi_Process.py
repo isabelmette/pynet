@@ -69,11 +69,12 @@ class CommunicateTest(unittest.TestCase):
 ##            lambda: self.pool.apply_async(thisProcess.call, (setValue, ('aValue',))))
 
     def test_the_processes_get_to_know_another(self):
+        startProcesses = self.PROCESSES + len(thisProcess.knownProcesses)
         l = [(thisProcess, i) for i in range(self.PROCESSES)]
         noneList = self.pool.map(sendArgsBack, l)
         self.assertEquals(noneList, [None] * len(l))
-        timeout(lambda: len(thisProcess.knownProcesses) >= self.PROCESSES, False)
-        self.assertGreaterEqual(len(thisProcess.knownProcesses), self.PROCESSES)
+        timeout(lambda: len(thisProcess.knownProcesses) >= startProcesses, False)
+        self.assertGreaterEqual(len(thisProcess.knownProcesses), startProcesses)
         for process, arg in answers:
             self.assertIn(process, thisProcess.knownProcesses)
         set1 = lambda: set([t[ARGS] for t in answers])
