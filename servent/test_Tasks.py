@@ -37,9 +37,10 @@ class Test_FunctionTask(unittest.TestCase):
             nonlocal ty, err, tb
             try:
                 raise exception
-            except:
+            except Exception:
                 ty, err, tb = sys.exc_info()
-                raise ty, err, tb
+                err.__traceback__ = tb
+                raise err
         t = self.t(f)
         self.assertEqual(t.perform(), Tasks.noResult)
         self.assertFalse(t.succeeded)
