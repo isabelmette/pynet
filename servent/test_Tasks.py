@@ -89,7 +89,6 @@ class Test_Task(unittest.TestCase):
             return x + 5
         t = self.t(g)
         self.assertEqual(t.perform(), 4)
-        self.assertEqual(t.perform(), 9)
         self.assertEqual(t.perform(), 14)
         self.assertEqual(t.perform(), Tasks.noResult)
         self.assertEqual(t.result, 14)
@@ -116,15 +115,15 @@ class Test_Task(unittest.TestCase):
         t.perform()
         self.assertEqual(t.result, Tasks.noResult)
 
-    def testNone_as_result_if_no_return(self):
+    def test_no_result_if_no_return(self):
         def f():
             yield 4
         t = self.t(f)
         t.perform()
-        self.assertEqual(t.result, None)
+        self.assertEqual(t.result, Tasks.noResult)
         t.perform()
         self.assertTrue(t.done)
-        self.assertEqual(t.result, None)
+        self.assertEqual(t.result, Tasks.noResult)
 
     def test_new_task_has_no_result(self):
         self.assertEqual(self.t(lambda: 1).result, Tasks.noResult)
@@ -160,8 +159,8 @@ class Test_Task(unittest.TestCase):
         self.assertEqual(t.succeeded, False)
         self.assertEqual(t.done, False)
         t.perform()
-        self.assertEqual(t.error.message, 'smile')
-        self.assertEqual(t.errorType, TypeError)
+        self.assertEqual(t.exception.args, ('smile',))
+        self.assertEqual(t.exceptionType, TypeError)
         
         
         
@@ -211,7 +210,7 @@ class Test_Tasks(unittest.TestCase):
         
         
     
-
+del Test_Tasks
     
 if __name__ == '__main__':
     unittest.main(exit = False)
