@@ -143,6 +143,20 @@ class Test_Task(unittest.TestCase):
         t.perform()
         t.perform()
         self.assertEqual(l, [1])
+
+    def test_raised_TypeError_in_function(self):
+        def f():
+            yield 1
+            raise TypeError('smile')
+        t = self.t(f)
+        t.perform()
+        self.assertEqual(t.success, False)
+        self.assertEqual(t.done, False)
+        t.perform()
+        self.assertEqual(t.error.message, 'smile')
+        self.assertEqual(t.errorType, TypeError)
+        
+        
         
 
 def f():
