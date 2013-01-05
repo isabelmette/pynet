@@ -102,6 +102,13 @@ class Test_Task(unittest.TestCase):
         t.perform()
         self.assertEqual(t.result, o)
 
+    def test_result_of_a_function_can_be_None(self):
+        def f():
+            return None
+        t = self.t(f)
+        t.perform()
+        self.assertEqual(t.result, None)
+
     def test_result_on_error(self):
         def f():
             raise
