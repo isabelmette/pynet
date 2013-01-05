@@ -65,6 +65,7 @@ class Test_Task(unittest.TestCase):
         self.assertEqual(t.perform(), 1)
         self.assertEqual(t.perform(), 2)
         self.assertFalse(t.done)
+        self.assertEqual(t.perform(), None)
         self.assertEqual(t.perform(), Tasks.noResult)
         self.assertTrue(t.succeeded)
         self.assertFalse(t.failed)
@@ -78,7 +79,7 @@ class Test_Task(unittest.TestCase):
             yield 3
         t = self.t(g())
         self.assertEqual(t.perform(), 3)
-        self.assertEqual(t.perform(), Tasks.noResult)
+        self.assertEqual(t.perform(), None)
 
     def test_result_of_yield_from(self):
         def g():
@@ -123,7 +124,7 @@ class Test_Task(unittest.TestCase):
         self.assertEqual(t.result, Tasks.noResult)
         t.perform()
         self.assertTrue(t.done)
-        self.assertEqual(t.result, Tasks.noResult)
+        self.assertEqual(t.result, None)
 
     def test_new_task_has_no_result(self):
         self.assertEqual(self.t(lambda: 1).result, Tasks.noResult)
@@ -133,6 +134,7 @@ class Test_Task(unittest.TestCase):
         self.assertEqual(t.perform(), 1)
         self.assertEqual(t.perform(), 2)
         self.assertEqual(t.perform(), 3)
+        self.assertEqual(t.perform(), None)
         self.assertEqual(t.perform(), Tasks.noResult)
 
     def test_iteration_over_task(self):

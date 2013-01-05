@@ -12,7 +12,7 @@ class Task:
         self.done = False
         self.succeeded = False
         self.failed = False
-        self.returnValue = None
+        self.returnValue = noResult
         self.result = noResult
         self.exception = None
         self.exceptionType = None
@@ -44,9 +44,8 @@ class Task:
                     self.returnValue = rslt
                     self.done = True
                     self.succeeded = True       
-        if self.result == None:
-            self.result = noResult
-            self.returnValue = noResult
+        #if self.returnValue == None:
+        #    self.returnValue = noResult
         return self.returnValue
     
     def _generalException(self):
