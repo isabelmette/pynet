@@ -39,8 +39,7 @@ class Test_FunctionTask(unittest.TestCase):
                 raise exception
             except Exception:
                 ty, err, tb = sys.exc_info()
-                err.__traceback__ = tb
-                raise err
+                raise err.with_traceback(tb)
         t = self.t(f)
         self.assertEqual(t.perform(), Tasks.noResult)
         self.assertFalse(t.succeeded)
@@ -48,8 +47,8 @@ class Test_FunctionTask(unittest.TestCase):
         self.assertTrue(t.done)
         self.assertEqual(t.exception, err)
         self.assertEqual(t.exceptionType, ty)
-        self.assertEqual(t.traceback, tb)
-        self.assertEqual(t.exceptionTraceback, tb)
+        self.assertEqual(t.traceback.tb_next, tb)
+        self.assertEqual(t.exceptionTraceback.tb_next, tb)
 
     def test_perform_twice(self):
         l = []
@@ -79,6 +78,64 @@ class Test_FunctionTask(unittest.TestCase):
         t = self.t(g())
         self.assertEqual(t.perform(), 3)
         self.assertEqual(t.perform(), Tasks.noResult)
+
+    def test_result_of_yield_from(self):
+        def g():
+            def f():
+                yield 4
+                return 9
+            x = yield from f()
+            return x + 5
+        t = self.t(g)
+        self.assertEqual(t.perform(), 4)
+        self.assertEqual(t.perform(), 9)
+        self.assertEqual(t.perform(), 14)
+        self.assertEqual(t.perform(), Tasks.noResult)
+        self.assertEqual(t.result, 14)
+
+    def test_result_of_a_function(self):
+        o = object()
+        def f():
+            return o
+        t = self.t(f)
+        t.perform()
+        self.assertEqual(t.result, o)
+
+    def test_result_on_error(self):
+        def f():
+            raise
+        t = self.t(f)
+        t.perform()
+        self.assertEqual(t.result, None)
+
+    def test_no_result_if_no_return(self):
+        def f():
+            yield 4
+        t = self.t(f)
+        t.perform()
+        self.assertEqual(t.result, None)
+        t.perform()
+        self.assertTrue(t.done)
+        self.assertEqual(t.result, None)
+
+    def test_works_with_any_iterable(self):
+        t = self.t(range(1,4))
+        self.assertEqual(t.perform(), 1)
+        self.assertEqual(t.perform(), 2)
+        self.assertEqual(t.perform(), 3)
+        self.assertEqual(t.perform(), Tasks.noResult)
+
+    def test_iteration_over_task(self):
+        t = self.t(range(2))
+        l = iter(t)
+        self.assertEqual(next(l), 0)
+        self.assertEqual(next(l), 1)
+        for i in l:
+            self.fail('iterator did not stop')
+            
+        
+
+    
 
     
 if __name__ == '__main__':
