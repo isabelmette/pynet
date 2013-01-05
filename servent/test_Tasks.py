@@ -1,11 +1,12 @@
 ## required imports
 import unittest
+import unittest.mock as mock
 import sys
 
 ## modules to test
 import Tasks
 
-class Test_FunctionTask(unittest.TestCase):
+class Test_Task(unittest.TestCase):
 
     t = Tasks.Task
 
@@ -106,7 +107,7 @@ class Test_FunctionTask(unittest.TestCase):
             raise
         t = self.t(f)
         t.perform()
-        self.assertEqual(t.result, None)
+        self.assertEqual(t.result, Tasks.noResult)
 
     def test_no_result_if_no_return(self):
         def f():
@@ -116,7 +117,10 @@ class Test_FunctionTask(unittest.TestCase):
         self.assertEqual(t.result, None)
         t.perform()
         self.assertTrue(t.done)
-        self.assertEqual(t.result, None)
+        self.assertEqual(t.result, Tasks.noResult)
+
+    def test_new_task_has_no_result(self):
+        self.assertEquals(self.t(lambda: 1).result, Tasks.noResult)
 
     def test_works_with_any_iterable(self):
         t = self.t(range(1,4))
@@ -141,6 +145,50 @@ class Test_FunctionTask(unittest.TestCase):
         self.assertEqual(l, [1])
         
 
+def f():
+    yield 1
+    yield 3
+def g():
+    yield 2
+    yield 4
+
+class Test_Tasks(unittest.TestCase):
+
+    def setUp(self):
+        self.tasks = Tasks.Tasks()
+
+    def test_use(self):
+        self.tasks.put(f)
+        self.tasks.put(g)
+        i = 1
+        for t in self.tasks.perform:
+            self.assertEqual(t, i)
+            i += 1
+        self.assertEqual(i, 4)
+
+    def test_count(self):
+        self.tasks.put(f)
+        self.tasks.put(g)
+        self.assertEqual(self.tasks.count, 2)
+        self.tasks.perform()
+        self.assertEqual(self.tasks.count, 2)
+        self.tasks.perform()
+        self.assertEqual(self.tasks.count, 2)
+        self.tasks.perform()
+        self.assertEqual(self.tasks.count, 1)
+        self.tasks.perform()
+        self.assertEqual(self.tasks.count, 0)
+
+    def test_new_task_is_created_by_put(self):
+        l = []
+        self.tasks.Task = mock.MagicMock(return_value = \
+                                         Tasks.Task(l.append, (4,)))
+        self.tasks.put(f, 3, 4)
+        self.tasks.Task.assert_called_with(f, 3, 4)
+        self.tasks.perform()
+        self.assetrEqual(l, [4])
+        
+        
     
 
     
