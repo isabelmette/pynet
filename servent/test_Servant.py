@@ -1,6 +1,5 @@
 ## required imports
 import unittest
-import threading
 import sys
 
 ## modules to test
