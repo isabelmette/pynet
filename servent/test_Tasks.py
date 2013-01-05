@@ -82,4 +82,4 @@ class Test_FunctionTask(unittest.TestCase):
 
     
 if __name__ == '__main__':
-    unittest.main(exit = True)
+    unittest.main(exit = False)
