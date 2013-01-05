@@ -120,7 +120,7 @@ class Test_Task(unittest.TestCase):
         self.assertEqual(t.result, Tasks.noResult)
 
     def test_new_task_has_no_result(self):
-        self.assertEquals(self.t(lambda: 1).result, Tasks.noResult)
+        self.assertEqual(self.t(lambda: 1).result, Tasks.noResult)
 
     def test_works_with_any_iterable(self):
         t = self.t(range(1,4))
@@ -150,7 +150,7 @@ class Test_Task(unittest.TestCase):
             raise TypeError('smile')
         t = self.t(f)
         t.perform()
-        self.assertEqual(t.success, False)
+        self.assertEqual(t.succeeded, False)
         self.assertEqual(t.done, False)
         t.perform()
         self.assertEqual(t.error.message, 'smile')

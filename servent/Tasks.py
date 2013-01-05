@@ -21,43 +21,52 @@ class Task:
     def perform(self):
         if self.done:
             return noResult
-        try:
-            rslt = self.function(*self.arguments, **self.keywords)
+        if self.generator is not None:
+            self._runGenerator()
+        elif self._isIterable(self.function):
+            self.generator = self.function
+            self._runGenerator()
+        else:
             try:
-                yieldvalue = next(rslt)
-                if self.generator:
-                    yieldvalue = next(self.generator)
-                else:
-                    self.generator = rslt
-                self.result = yieldvalue
-            except StopIteration as stop:
-                self.exceptionType, self.exception, tb = sys.exc_info()
-                self.result = stop.value
-                self.done = True
-                self.succeeded = True
-            except TypeError:
-                self.result = rslt
-                self.done = True
-                self.succeeded = True
-                
-            try:
-                yieldvalue = next(self.function(*self.arguments, **self.keywords))
-                if self.generator:
-                        yieldvalue = next(self.generator)
-                else:
-                    self.generator = self.function(*self.arguments, **self.keywords)
-                self.result = yieldvalue
-                print("went to here")
+                rslt = self.function(*self.arguments, **self.keywords)      
             except:
-                pass
-        except:
-            self.exceptionType, self.exception, tb = sys.exc_info()
-            #self.exception = err
-            self.traceback = tb.tb_next
-            #traceback.print_exception(self.exceptionType, self.exception, self.traceback)
-            self.failed = True
-            return noResult
-        
+                return self._generalException()
+            else:
+                if self._isIterable(rslt):
+                    self.generator = rslt
+                    self._runGenerator()
+                else:
+                    self.result = rslt
+                    self.done = True
+                    self.succeeded = True       
         if self.result == None:
             self.result = noResult
         return self.result
+    
+    def _generalException(self):
+        self.exceptionType, self.exception, tb = sys.exc_info()
+        #self.exception = err
+        self.traceback = tb.tb_next
+        #traceback.print_exception(self.exceptionType, self.exception, self.traceback)
+        self.failed = True
+        return noResult
+
+    @ staticmethod
+    def _isIterable(obj):
+        return hasattr(obj, '__next__')
+
+    def _runGenerator(self):
+        try:
+            yieldvalue = next(self.generator)
+        except StopIteration as stop:
+            self.exceptionType, self.exception, tb = sys.exc_info()
+            self.result = stop.value
+            self.done = True
+            self.succeeded = True
+        except:
+            return self._generalException()
+        else:
+            self.result = yieldvalue
+            
+class Tasks:
+    Task = Task
