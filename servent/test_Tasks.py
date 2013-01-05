@@ -109,7 +109,7 @@ class Test_Task(unittest.TestCase):
         t.perform()
         self.assertEqual(t.result, Tasks.noResult)
 
-    def test_no_result_if_no_return(self):
+    def testNone_as_result_if_no_return(self):
         def f():
             yield 4
         t = self.t(f)
@@ -117,7 +117,7 @@ class Test_Task(unittest.TestCase):
         self.assertEqual(t.result, None)
         t.perform()
         self.assertTrue(t.done)
-        self.assertEqual(t.result, Tasks.noResult)
+        self.assertEqual(t.result, None)
 
     def test_new_task_has_no_result(self):
         self.assertEqual(self.t(lambda: 1).result, Tasks.noResult)
