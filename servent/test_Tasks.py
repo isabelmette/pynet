@@ -8,7 +8,7 @@ import Tasks
 
 class Test_Task(unittest.TestCase):
 
-    t = Tasks.Task
+    t = Tasks.Tasks.Task
 
     def test_create(self):
         f = lambda: None
@@ -186,7 +186,7 @@ class Test_Tasks(unittest.TestCase):
         self.tasks.put(f, 3, 4)
         self.tasks.Task.assert_called_with(f, 3, 4)
         self.tasks.perform()
-        self.assetrEqual(l, [4])
+        self.assertEqual(l, [4])
         
         
     
