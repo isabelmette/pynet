@@ -19,5 +19,5 @@ class TimeoutTest:
     timeout = property(timeout)
     
     def assertTimeoutEqual(self, value, expected, *args):
-        timeout(lambda: value, expected)
+        timeout(lambda: value == expected, False)
         self.assertEqual(value, expected, *args)
