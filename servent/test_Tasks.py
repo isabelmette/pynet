@@ -211,8 +211,7 @@ class Test_Tasks(unittest.TestCase):
         self.assertEqual(l, [4])
         
         
-    
-del Test_Tasks
+
     
 if __name__ == '__main__':
     unittest.main(exit = False)
