@@ -133,6 +133,12 @@ class Test_FunctionTask(unittest.TestCase):
         for i in l:
             self.fail('iterator did not stop')
             
+    def test_does_not_call_twice(self):
+        l = []
+        t = self.t(l.append, (1,))
+        t.perform()
+        t.perform()
+        self.assertEqual(l, [1])
         
 
     
