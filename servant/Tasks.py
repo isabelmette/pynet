@@ -1,13 +1,18 @@
 import sys
 import queue
+import traceback
 
 noResult = object()
 
+def print_exception(errorType, error, _traceback):
+    traceback.print_exception(errorType, error, _traceback)
+
 class Task:
-    def __init__(self, function, args=(), kw={}):
+    def __init__(self, function, args=(), kw={}, onError = print_exception):
         self.function = function
         self.arguments = args
         self.keywords = kw
+        self.onError = onError
 
         self.done = False
         self.succeeded = False
@@ -21,7 +26,7 @@ class Task:
 
     def perform(self):
         if self.done:
-            return noResult
+            return noResult 
         if self.generator is not None:
             self._runGenerator()
         elif self._isIterable(self.function):
@@ -56,6 +61,7 @@ class Task:
         self.traceback = tb.tb_next
         self.failed = True
         self.done = True
+        self.onError(self.exceptionType, self.exception, self.traceback)
         return noResult
 
     @ staticmethod
@@ -122,7 +128,6 @@ class Tasks:
         except queue.Empty:
             return False
         value = task.perform()
-        print(value)
         if self.Task.accept(value):
             self.put(value)
         if not task.done:
