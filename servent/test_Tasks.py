@@ -169,10 +169,10 @@ class Test_Task(unittest.TestCase):
 
 def f():
     yield 1
-    yield 3
+    return 3
 def g():
     yield 2
-    yield 4
+    return 4
 
 class Test_Tasks(unittest.TestCase):
 

@@ -1,5 +1,5 @@
 import sys
-import traceback
+import queue
 
 noResult = object()
 
@@ -88,3 +88,19 @@ class Task:
             
 class Tasks:
     Task = Task
+
+    def __init__(self):
+        self.tasks = queue.Queue()
+
+    def put(self, function, *args):
+        self.tasks.put(self.Task(function, *args))
+
+    @property
+    def count(self):
+        return self.tasks.qsize()
+
+    def perform(self):
+        task = self.tasks.get()
+        task.perform()
+        if not task.done:
+            self.tasks.put(task)
