@@ -210,8 +210,14 @@ class Test_Tasks(unittest.TestCase):
         self.tasks.perform()
         self.assertEqual(l, [4])
         
-        
-
+    def test_tasks_are_executed_in_put_order(self):
+        l = []
+        r = range(10)
+        for i in r:
+            self.tasks.put(l.append, (i,))
+        for x in self.tasks.perform:
+            pass
+        self.assertEqual(l, list(r))
     
 if __name__ == '__main__':
     unittest.main(exit = False)
