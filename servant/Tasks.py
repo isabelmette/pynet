@@ -102,9 +102,13 @@ class Tasks:
 
     def __init__(self):
         self.tasks = queue.Queue()
+        self.subscribers = []
 
     def put(self, function, *args):
-        self.tasks.put(self.Task(function, *args))
+        task = self.Task(function, *args)
+        self.tasks.put(task)
+        for s in self.subscribers:
+                s.newTask(task)
 
     @property
     def count(self):
@@ -113,11 +117,19 @@ class Tasks:
     def perform(self):
         try:
             task = self.tasks.get_nowait()
+            for s in self.subscribers:
+                s.leftQueue(task)
         except queue.Empty:
             return False
         value = task.perform()
+        print(value)
         if self.Task.accept(value):
             self.put(value)
         if not task.done:
             self.tasks.put(task)
+            for s in self.subscribers:
+                s.newTask(task)   
         return not self.tasks.empty()
+
+    def subscribe(self, subscriber):
+        self.subscribers.append(subscriber)

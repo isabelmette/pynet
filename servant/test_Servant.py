@@ -10,7 +10,7 @@ import Servant
 from test import timeout, TimeoutTest
 
 
-class Test_Servent_do(unittest.TestCase, TimeoutTest):
+class Test_Servant_do(unittest.TestCase, TimeoutTest):
 
     def setUp(self):
         self.servant = Servant.Servant()
@@ -57,7 +57,7 @@ class Test_Servent_do(unittest.TestCase, TimeoutTest):
         s = set()
         def a():
             def b():
-                yield from range(1000)
+                yield from range(20)
                 l.append(1)
             yield b()
             while l != [1]:
@@ -67,19 +67,25 @@ class Test_Servent_do(unittest.TestCase, TimeoutTest):
         self.assertTimeoutEqual(s, set((1,)))
 
     def test_parallel_do(self):
-        l = []
-        s = set()
+        start = []
+        s1 = set()
+        s2 = set()
         def a():
-            timeout(lambda: 1 in l, False)
-            assert 1 in l
-            s.add(1)
+            s1.add(1)
+            timeout(lambda: start, [])
+            assert start != []
+            s2.add(1)
         def b():
-            timeout(lambda: 2 in l, False)
-            assert 2 in l
-            s.add(2)
+            s1.add(2)
+            timeout(lambda: start, [])
+            assert start != []
+            s2.add(2)
         self.servant.do(a)
         self.servant.do(b)
-        self.assertTimeoutEqual(s, set((1,2)))
+        self.assertTimeoutEqual(s1, set((1,2)))
+        self.assertEqual(s2, set())
+        start.append(1)
+        self.assertTimeoutEqual(s2, set((1,2)))
 
 
         
@@ -198,4 +204,4 @@ class Test_Servant_Module(unittest.TestCase, TimeoutTest):
         
     
 if __name__ == '__main__':
-    unittest.main(exit = False)
+    unittest.main(exit = False, defaultTest = 'Test_Servant_do.test_parallel_do')
