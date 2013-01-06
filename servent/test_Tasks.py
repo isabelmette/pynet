@@ -231,7 +231,10 @@ class Test_Tasks(unittest.TestCase):
             l.append(4)
         self.tasks.put(f, (5, 6), {'x':8, 'y':9})
         while self.tasks.perform(): pass
-        self.assertEqual(l, [5, 6, 8, 9, 1, 2, 3, 4, 5])
+        self.assertEqual(l, [5, 6, 8, 9, 1, 2, 3, 4])
+
+    def test_no_tasks_can_not_perform(self):
+        self.assertEqual(self.tasks.perform(), False)
                 
 if __name__ == '__main__':
     unittest.main(exit = False)
