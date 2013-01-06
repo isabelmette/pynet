@@ -25,7 +25,10 @@ class Task:
         if self.generator is not None:
             self._runGenerator()
         elif hasattr(self.function, '__iter__'):
-            self.generator = iter(self.function)
+            try:
+                self.generator = iter(self.function)
+            except:
+                return self._generalException() 
             self._runGenerator()
         elif self._isIterator(self.function):
             self.generator = self.function

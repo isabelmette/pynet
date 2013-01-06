@@ -170,7 +170,7 @@ class Test_Task(unittest.TestCase):
                 raise
         for t in (self.t(FoulIterator), self.t(FoulIterator())):
             t.perform()
-            self.assertFalse(t.succedded)
+            self.assertFalse(t.succeeded)
             self.assertTrue(t.done)
             self.assertTrue(t.failed)
 
