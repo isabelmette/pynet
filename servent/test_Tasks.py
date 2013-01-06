@@ -188,7 +188,7 @@ class Test_Tasks(unittest.TestCase):
             i += 1
         self.assertEqual(i, 4)
 
-    def test_count(self):
+    def test_execute_tasks_until_done(self):
         self.tasks.put(f)
         self.tasks.put(g)
         self.assertEqual(self.tasks.count, 2)
@@ -218,8 +218,23 @@ class Test_Tasks(unittest.TestCase):
         for x in self.tasks.perform:
             pass
         self.assertEqual(l, list(r))
+
+    def test_execute_and_parallelize(self):
+        def f(a, b, x = 1, y = 2):
+            l = [a, b, x, y]
+            def g():
+                l.append(1)
+                yield
+                l.append(2)
+                yield
+                l.append(3)
+            yield g
+            yield from range(100)
+            l.append(4)
+        self.tasks.put(f, (5, 6), {'x':8, 'y':9})
+        for x in self.tasks.perform: pass
+        self.assertEqual(l, [5, 6, 8, 9, 1, 2, 3, 4, 5])
             
-    
 del Test_Tasks
     
 if __name__ == '__main__':
