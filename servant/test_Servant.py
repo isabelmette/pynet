@@ -1,5 +1,6 @@
 ## required imports
 import unittest
+import unittest.mock as mock
 import sys
 
 ## modules to test
@@ -111,6 +112,89 @@ class Test_Servant(unittest.TestCase, TimeoutTest):
         self.assertFalse(self.servant.isIdle())
         l.append(1)
         self.assertTimeoutEqual(s, set((1,)))
+
+    def test_maximum_thread_count(self):
+        mtc = 10
+        self.servant.maximumThreadCount = mtc
+        self.assertEqual(self.servant.maximumThreadCount, mtc)
+        l = threading.Lock()
+        l.acquire()
+        for i in range(mtc * 2):
+            self.servant.do(l.acquire, ())
+        self.assertEqual(len(self.servant.threads), mtc)
+        i = 0
+        for i in range(mtc * 2):
+            if l.locked():
+                l.release()
+                i += 1
+            time.sleep(0.001)
+
+##del Test_Servent_do, Test_Servent
+
+class MockThread:
+    t = []
+    def __init__(self, watcher):
+        self.t.append(self)
+        self.watcher = watcher
+        self.started = False
+        self.stopped = False
+    
+    def start(self):
+        self.started = True
+
+    def run(self):
+        self.watcher.perform()
+
+    def stop(self):
+        self.stopped = True
+
+class MockWatcher(Servant.Watcher):
+
+    Thread = MockThread
+
+class Test_Watcher(unittest.TestCase, TimeoutTest):
+
+    def setUp(self):
+        self.watcher = MockWatcher()
+        MockThread.t = self.threads = []
+
+    def test_watcher_can_perform(self):
+        l = []
+        self.watcher.put(l.append, (1,))
+        self.assertEqual(l, [])
+        self.watcher.perform()
+        self.assertEqual(l, [1])
+
+    def test_watcher_starts_and_ends_threads(self):
+        l = []
+        self.watcher.put(l.append, (1,))
+        self.assertEqual(self.threads, [])
+        self.watcher.start()
+        timeout(lambda: self.threads, [])
+        self.assertEqual(len(self.threads), 1)
+        thread = self.threads[0]
+        self.assertEqual(self.thread.watcher, self.watcher)
+        self.assertTimeoutEqual(self.thread.started, True)
+        thread.run()
+        self.assertTimeoutEqual(self.thread.stopped, True)
+        
+    def test_watcher_registers_threads_and_removes_them(self):
+        t = self.watcher.Thread(self.watcher)
+        self.assertEqual(len(self.watcher.threads))
+        l = []
+        def run():
+            timeout(l, [])
+        t.run = run
+        t.start()
+
+##del Test_Watcher
+
+class Test_Servant_Module(unittest.TestCase, TimeoutTest):
+
+    def test_do(self):
+        l = []
+        Servant.do(l.append, (3,))
+        self.assertTimeoutEqual(l, [3])
         
     
 if __name__ == '__main__':
