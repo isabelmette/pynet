@@ -180,12 +180,13 @@ class Test_Task(unittest.TestCase):
         self.assertTrue(self.t.accept(X))
         x = X()
         self.assertFalse(self.t.accept(x))
-        for attr in '__call__ __iter__ __next__'.split(' '):
+        for attr in ('__call__', '__iter__', '__next__'):
             x = X()
-            self.assertFalse(hasattr(x, attr)) # precondition for test
+            self.assertFalse(hasattr(x, attr), attr) # precondition for test
             setattr(X, attr, lambda: None)
-            self.assertTrue(hasattr(x, attr)) # precondition for test
-            self.assertTrue(self.t.accept(x))
+            self.assertTrue(hasattr(x, attr), attr) # precondition for test
+            self.assertTrue(self.t.accept(x), attr)
+            delattr(X, attr)
             
 
 def f():
@@ -260,11 +261,13 @@ class Test_Tasks(unittest.TestCase):
 
     def test_fork_with_iterator(self):
         def f():
+
             yield f()
-        self.tasks.add(f())
-        for i in range(100):
+        self.tasks.put(f())
+        for i in range(101):
             self.tasks.perform()
-        self.assertEqual(self.tasks.count, 2)
+        print(self.tasks.tasks)
+        self.assertGreaterEqual(self.tasks.count, 2)
                 
 if __name__ == '__main__':
     unittest.main(exit = False)

@@ -24,7 +24,7 @@ class Task:
             return noResult
         if self.generator is not None:
             self._runGenerator()
-        elif hasattr(self.function, '__iter__'):
+        elif self._isIterable(self.function):
             try:
                 self.generator = iter(self.function)
             except:
@@ -60,8 +60,11 @@ class Task:
 
     @ staticmethod
     def _isIterator(obj):
-        
         return hasattr(obj, '__next__')
+
+    @ staticmethod
+    def _isIterable(obj):
+        return hasattr(obj, '__iter__')
 
     def _runGenerator(self):
         try:
@@ -87,6 +90,11 @@ class Task:
     @property
     def exceptionTraceback(self):
         return self.traceback
+
+    @classmethod
+    def accept(cls, method):
+        return callable(method) or cls._isIterator(method) or \
+               cls._isIterable(method)
     
             
 class Tasks:
@@ -108,7 +116,8 @@ class Tasks:
         except queue.Empty:
             return False
         value = task.perform()
-        if callable(value):
+        print(value)
+        if self.Task.accept(value):
             self.put(value)
         if not task.done:
             self.tasks.put(task)
