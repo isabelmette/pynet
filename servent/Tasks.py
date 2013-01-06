@@ -100,8 +100,13 @@ class Tasks:
         return self.tasks.qsize()
 
     def perform(self):
-        task = self.tasks.get()
-        task.perform()
+        try:
+            task = self.tasks.get_nowait()
+        except queue.Empty:
+            return False
+        value = task.perform()
+        if callable(value):
+            self.put(value)
         if not task.done:
             self.tasks.put(task)
         return not self.tasks.empty()
