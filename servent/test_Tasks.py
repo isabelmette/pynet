@@ -174,6 +174,20 @@ class Test_Task(unittest.TestCase):
             self.assertTrue(t.done)
             self.assertTrue(t.failed)
 
+    def test_valid_objects_for_Taks(self):
+        class X():
+            pass
+        self.assertTrue(self.t.accept(X))
+        x = X()
+        self.assertFalse(self.t.accept(x))
+        for attr in '__call__ __iter__ __next__'.split(' '):
+            x = X()
+            self.assertFalse(hasattr(x, attr)) # precondition for test
+            setattr(X, attr, lambda: None)
+            self.assertTrue(hasattr(x, attr)) # precondition for test
+            self.assertTrue(self.t.accept(x))
+            
+
 def f():
     yield 1
     return 3
@@ -243,6 +257,14 @@ class Test_Tasks(unittest.TestCase):
 
     def test_no_tasks_can_not_perform(self):
         self.assertEqual(self.tasks.perform(), False)
+
+    def test_fork_with_iterator(self):
+        def f():
+            yield f()
+        self.tasks.add(f())
+        for i in range(100):
+            self.tasks.perform()
+        self.assertEqual(self.tasks.count, 2)
                 
 if __name__ == '__main__':
     unittest.main(exit = False)
