@@ -116,7 +116,6 @@ class Tasks:
         except queue.Empty:
             return False
         value = task.perform()
-        print(value)
         if self.Task.accept(value):
             self.put(value)
         if not task.done:
