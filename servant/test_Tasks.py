@@ -6,6 +6,9 @@ import sys
 ## modules to test
 import Tasks
 
+def handle_error(ty, err, tb):
+    pass
+
 class Test_Task(unittest.TestCase):
 
     t = Tasks.Tasks.Task
@@ -41,7 +44,7 @@ class Test_Task(unittest.TestCase):
             except Exception:
                 ty, err, tb = sys.exc_info()
                 raise err.with_traceback(tb)
-        t = self.t(f)
+        t = self.t(f, onError = lambda *args: error.append(args))
         self.assertEqual(t.perform(), Tasks.noResult)
         self.assertFalse(t.succeeded)
         self.assertTrue(t.failed)
@@ -50,6 +53,9 @@ class Test_Task(unittest.TestCase):
         self.assertEqual(t.exceptionType, ty)
         self.assertEqual(t.traceback.tb_next, tb)
         self.assertEqual(t.exceptionTraceback.tb_next, tb)
+        self.assertEqual(error[0], ty)
+        self.assertEqual(error[1], err)
+        self.assertEqual(error[2], tb)
 
     def test_perform_twice(self):
         l = []
@@ -112,7 +118,7 @@ class Test_Task(unittest.TestCase):
     def test_result_on_error(self):
         def f():
             raise
-        t = self.t(f)
+        t = self.t(f, onError = handle_error)
         t.perform()
         self.assertEqual(t.result, Tasks.noResult)
 
@@ -156,7 +162,7 @@ class Test_Task(unittest.TestCase):
         def f():
             yield 1
             raise TypeError('smile')
-        t = self.t(f)
+        t = self.t(f, onError = handle_error)
         t.perform()
         self.assertEqual(t.succeeded, False)
         self.assertEqual(t.done, False)
@@ -168,7 +174,8 @@ class Test_Task(unittest.TestCase):
         class FoulIterator:
             def __iter__(self):
                 raise
-        for t in (self.t(FoulIterator), self.t(FoulIterator())):
+        for t in (self.t(FoulIterator, onError = handle_error), \
+                  self.t(FoulIterator(), onError = handle_error)):
             t.perform()
             self.assertFalse(t.succeeded)
             self.assertTrue(t.done)
@@ -197,7 +204,7 @@ class Test_Task(unittest.TestCase):
             except self.t.StopError:
                 l.append(1)
                 raise
-        t = self.t(f)
+        t = self.t(f, onError = handle_error)
         t.perform()
         t.stop()
         self.assertEqual(l, [1])
@@ -206,9 +213,24 @@ class Test_Task(unittest.TestCase):
     def test_stop_task_that_can_not_be_stopped(self):
         t = self.t(range(4))
         t.perform()
-        self.assertRaisesRegexp(TypeError, 'Can not stop .* without '\
+        self.assertRaisesRegex(TypeError, 'Can not stop .* without '\
                                 'throw\\(\\)', \
                                 lambda: t.stop())
+
+    def test_on_error_traceback_is_default_handler(self):
+        import traceback
+        _tb_pe = tracback.print_exception
+        try:
+            traceback.print_exception = pe = MagicMock()
+            def f():
+                raise NameError(1,2,3)
+            t = self.t(f)
+            t.perform()
+        finally:
+            tracback.print_exception = _tb_pe
+        self.assertEqual(pe.call_args[0], NameError)
+        self.assertEqual(pe.call_args[1].args, (1,2,3))
+        
 
 def f():
     yield 1
