@@ -183,8 +183,7 @@ class Test_Tasks(unittest.TestCase):
         self.tasks.put(f)
         self.tasks.put(g)
         i = 1
-        for t in self.tasks.perform:
-            self.assertEqual(t, i)
+        while self.tasks.perform():
             i += 1
         self.assertEqual(i, 4)
 
@@ -215,8 +214,7 @@ class Test_Tasks(unittest.TestCase):
         r = range(10)
         for i in r:
             self.tasks.put(l.append, (i,))
-        for x in self.tasks.perform:
-            pass
+        while self.tasks.perform(): pass
         self.assertEqual(l, list(r))
 
     def test_execute_and_parallelize(self):
@@ -232,7 +230,7 @@ class Test_Tasks(unittest.TestCase):
             yield from range(100)
             l.append(4)
         self.tasks.put(f, (5, 6), {'x':8, 'y':9})
-        for x in self.tasks.perform: pass
+        while self.tasks.perform(): pass
         self.assertEqual(l, [5, 6, 8, 9, 1, 2, 3, 4, 5])
             
 del Test_Tasks
