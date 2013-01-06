@@ -187,7 +187,28 @@ class Test_Task(unittest.TestCase):
             self.assertTrue(hasattr(x, attr), attr) # precondition for test
             self.assertTrue(self.t.accept(x), attr)
             delattr(X, attr)
-            
+
+
+    def test_stop_task(self):
+        l = []
+        def f():
+            try:
+                yield 1
+            except self.t.StopError:
+                l.append(1)
+                raise
+        t = self.t(f)
+        t.perform()
+        t.stop()
+        self.assertEqual(l, [1])
+        self.assertEqual(t.exceptionClass, self.t.StopError)
+
+    def test_stop_task_that_can_not_be_stopped(self):
+        t = self.t(range(4))
+        t.perform()
+        self.assertRaisesRegexp(TypeError, 'Can not stop .* without '\
+                                'throw\\(\\)', \
+                                lambda: t.stop())
 
 def f():
     yield 1
