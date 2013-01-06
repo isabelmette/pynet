@@ -104,3 +104,4 @@ class Tasks:
         task.perform()
         if not task.done:
             self.tasks.put(task)
+        return not self.tasks.empty()
