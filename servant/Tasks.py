@@ -23,6 +23,7 @@ class Task:
         self.exceptionType = None
         self.traceback = None
         self.generator = None
+        self.enterTime = None
 
     def perform(self):
         if self.done:

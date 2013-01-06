@@ -2,6 +2,7 @@
 import unittest
 import unittest.mock as mock
 import sys
+import threading
 
 ## modules to test
 import Servant
@@ -204,4 +205,4 @@ class Test_Servant_Module(unittest.TestCase, TimeoutTest):
         
     
 if __name__ == '__main__':
-    unittest.main(exit = False, defaultTest = 'Test_Servant_do.test_parallel_do')
+    unittest.main(exit = False)
