@@ -163,9 +163,16 @@ class Test_Task(unittest.TestCase):
         t.perform()
         self.assertEqual(t.exception.args, ('smile',))
         self.assertEqual(t.exceptionType, TypeError)
-        
-        
-        
+
+    def test_foul_iterator(self):
+        class FoulIterator:
+            def __iter__(self):
+                raise
+        for t in (self.t(FoulIterator), self.t(FoulIterator())):
+            t.perform()
+            self.assertFalse(t.succedded)
+            self.assertTrue(t.done)
+            self.assertTrue(t.failed)
 
 def f():
     yield 1
