@@ -218,8 +218,9 @@ class Test_Tasks(unittest.TestCase):
         self.assertEqual(l, list(r))
 
     def test_execute_and_parallelize(self):
+        l = []
         def f(a, b, x = 1, y = 2):
-            l = [a, b, x, y]
+            l.extend([a, b, x, y])
             def g():
                 l.append(1)
                 yield
