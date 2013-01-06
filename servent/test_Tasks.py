@@ -266,7 +266,6 @@ class Test_Tasks(unittest.TestCase):
         self.tasks.put(f())
         for i in range(101):
             self.tasks.perform()
-        print(self.tasks.tasks)
         self.assertGreaterEqual(self.tasks.count, 2)
                 
 if __name__ == '__main__':
