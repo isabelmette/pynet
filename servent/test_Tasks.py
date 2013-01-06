@@ -169,10 +169,10 @@ class Test_Task(unittest.TestCase):
 
 def f():
     yield 1
-    yield 3
+    return 3
 def g():
     yield 2
-    yield 4
+    return 4
 
 class Test_Tasks(unittest.TestCase):
 
@@ -232,8 +232,6 @@ class Test_Tasks(unittest.TestCase):
         self.tasks.put(f, (5, 6), {'x':8, 'y':9})
         while self.tasks.perform(): pass
         self.assertEqual(l, [5, 6, 8, 9, 1, 2, 3, 4, 5])
-            
-del Test_Tasks
-    
+                
 if __name__ == '__main__':
     unittest.main(exit = False)
