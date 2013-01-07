@@ -2,6 +2,7 @@
 import unittest
 import unittest.mock as mock
 import sys
+import threading
 
 ## modules to test
 import Tasks
@@ -253,6 +254,45 @@ class Test_Task(unittest.TestCase):
         for i in range(5):
             self.assertRaisesRegex(TabError, 'bad tabby',
                                    lambda: next(g))
+
+    def test_task_does_nothing_if_generator_is_running(self):
+        l = threading.Lock()
+        l.acquire()
+        v = []
+        @self.t
+        def f():
+            v.append(0)
+            l.acquire()
+            v.append(1)
+        threading.Thread(target = f.perform).start()
+        self.assertTimeoutEqual(v, [0])
+        self.assertEqual(f.perform(), Tasks.noResult)
+        self.assertFalse(f.done)
+        self.assertFalse(f.succeeded)
+        self.assertFalse(f.failed)
+        l.release()
+        self.assertTimeoutEqual(v, [0,1])
+
+    def test_yield_from_running_generator_is_an_error(self):
+        l = threading.Lock()
+        l.acquire()
+        v = []
+        def f():
+            v.append(0)
+            l.acquire()
+            yield
+            v.append(1)
+            yield
+        p = f()
+        def g():
+            yield from p # ValueError: generator already executing
+        t = self.t(g)
+        threading.Thread(target = lambda: next(p)).start()
+        self.assertEqual(t.perform(), Tasks.noResult)
+        self.assertTrue(t.done)
+        self.assertTrue(t.failed)
+        self.assertEqual(t.exceptionType, ValueError)
+        self.assertEqual(t.exception.args[0], 'generator already executing')
 
 def f():
     yield 1
