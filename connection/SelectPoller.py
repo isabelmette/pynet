@@ -10,10 +10,7 @@ class SelectPoller:
         self._read = []
         self._write = []
         self._exceptional = []
-        self._thread = self.servant.Thread(target = self._poll)
-        self._stopped = False
 
-    @Servant.servant
     def _poll(self):
         while not self._stopped:
             try:
