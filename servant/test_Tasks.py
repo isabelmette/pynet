@@ -151,6 +151,19 @@ class Test_Task(unittest.TestCase):
         self.assertEqual(next(l), 1)
         for i in l:
             self.fail('iterator did not stop')
+
+    def test_completed_task_stops_always_with_result(self):
+        o = object()
+        def g():
+            yield 1
+            return o
+        t = self.t(g)
+        next(t)
+        for i in range(10):
+            try:
+                next(t)
+            except StopIteration as s:
+                self.assertEqual(s.args[0], o)
             
     def test_does_not_call_twice(self):
         l = []

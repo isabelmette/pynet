@@ -136,6 +136,28 @@ class Test_Servant(unittest.TestCase, TimeoutTest):
                 i += 1
             time.sleep(0.001)
 
+    def test_servant_as_decorator(self):
+        l = set()
+        def g():pass
+        _g = g
+        @self.servant
+        def g(a):
+            l.add(a)
+            yield
+            return 4 + a
+        a = g(1)
+        b = g(2)
+        self.assertEqual(g.__name__, _g.__name__)
+        self.assertEqual(g.__qualname__, g.__qualname__)
+        self.assertTimeoutEqual(l, set([1,2]))
+        timeout(lambda: a.done, False)
+        self.assertTrue(a.done)
+        self.assertEqual(a.result, 5)
+        timeout(lambda: b.done, False)
+        self.assertTrue(a.done)
+        self.assertEqual(a.result, 5)
+        
+
 ##del Test_Servent_do, Test_Servent
 
 class MockThread:
@@ -193,6 +215,7 @@ class Test_Watcher(unittest.TestCase, TimeoutTest):
             timeout(l, [])
         t.run = run
         t.start()
+
 
 ##del Test_Watcher
 
