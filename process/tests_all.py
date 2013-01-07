@@ -5,8 +5,8 @@ from test_Listener import *
 from test_multi_Process import *
 from test_Process import *
 from test_proxy import *
-from test_raiseConditions import *
-from test_raiseConditionsBasic import *
+from test_raceConditions import *
+from test_raceConditionsBasic import *
 from test_TopConnection import *
 from test_VeryPicklableObject import *
 
