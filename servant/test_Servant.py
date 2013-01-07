@@ -156,6 +156,27 @@ class Test_Servant(unittest.TestCase, TimeoutTest):
         timeout(lambda: b.done, False)
         self.assertTrue(a.done)
         self.assertEqual(a.result, 5)
+
+    def test_servent_decorator_twice_is_not_allowed(self):
+        s = Servant.Servant()
+        try:
+            @s
+            @self.servant
+            def g():
+                pass
+        except ReferenceError as e:
+            self.assertEqual(e.args[0], 'Can not start function in two different servants:')
+            self.assertEqual(e.args[1], self.servant)
+            self.assertEqual(e.args[2], s)
+
+    def test_can_decorate_twice_with_same_servant(self):
+        try:
+            @self.servant
+            @self.servant
+            def g():
+                pass
+        except ReferenceError:
+            self.fail()
         
 
 ##del Test_Servent_do, Test_Servent
