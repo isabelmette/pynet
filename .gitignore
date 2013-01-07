@@ -31,3 +31,4 @@ pip-log.txt
 
 # Generated Files / Databases
 akiradb
+/servant/Thread.py
