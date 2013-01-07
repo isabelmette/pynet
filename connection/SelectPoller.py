@@ -1,12 +1,11 @@
 import traceback
 import select
 import threading
+import pynet.servant.Servant as Servant
 
 
-class SelectPoller():
+class SelectPoller:
 
-    import pynet.servant.Servant as servant
-    
     def __init__(self):
         self._read = []
         self._write = []
@@ -14,6 +13,7 @@ class SelectPoller():
         self._thread = self.servant.Thread(target = self._poll)
         self._stopped = False
 
+    @Servant.servant
     def _poll(self):
         while not self._stopped:
             try:

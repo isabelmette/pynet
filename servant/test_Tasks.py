@@ -245,7 +245,14 @@ class Test_Task(unittest.TestCase):
             traceback.print_exception = _tb_pe
         self.assertEqual(pe.call_args[0][0], NameError)
         self.assertEqual(pe.call_args[0][1].args, (1,2,3))
-        
+
+    def test_iterate_and_error(self):
+        @self.t
+        def g():
+            raise TabError('bad tabby')
+        for i in range(5):
+            self.assertRaisesRegex(TabError, 'bad tabby',
+                                   lambda: next(g))
 
 def f():
     yield 1

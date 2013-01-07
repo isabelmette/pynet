@@ -177,8 +177,35 @@ class Test_Servant(unittest.TestCase, TimeoutTest):
                 pass
         except ReferenceError:
             self.fail()
-        
 
+    def test_decorate_method_in_class(self):
+        a = b = None
+        class X:
+            def a(self):
+                nonlocal a
+                a = self
+            @self.servant
+            def b(self):
+                nonlocal b
+                b = self
+        x = X()
+        x.a()
+        self.assertEqual(a, x)
+        y = X()
+        _b = b
+        y.b()
+        timeout(lambda: b, _b)
+        self.assertEqual(b, y)
+
+        x = X()
+        X.a(x)
+        self.assertEqual(a, x)
+        y = X()
+        _b = b
+        X.b(y)
+        timeout(lambda: b, _b)
+        self.assertEqual(b, y)
+        
 ##del Test_Servent_do, Test_Servent
 
 class MockThread:
