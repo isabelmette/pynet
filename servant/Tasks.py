@@ -116,6 +116,7 @@ class Tasks:
         self.tasks.put(task)
         for s in self.subscribers:
                 s.newTask(task)
+        return task
 
     @property
     def count(self):

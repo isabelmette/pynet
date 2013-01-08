@@ -148,7 +148,7 @@ class Test_Servant(unittest.TestCase, TimeoutTest):
         a = g(1)
         b = g(2)
         self.assertEqual(g.__name__, _g.__name__)
-        self.assertEqual(g.__qualname__, g.__qualname__)
+        self.assertEqual(g.__qualname__, _g.__qualname__)
         self.assertTimeoutEqual(l, set([1,2]))
         timeout(lambda: a.done, False)
         self.assertTrue(a.done)
@@ -228,6 +228,9 @@ class MockThread:
 class MockWatcher(Servant.Watcher):
 
     Thread = MockThread
+
+class MockServant:
+    pass
 
 class Test_Watcher(unittest.TestCase, TimeoutTest):
 

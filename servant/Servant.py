@@ -3,7 +3,6 @@ import Tasks
 import time
 
 
-
 class Servant(object):
     def __init__(self):
         self.threads = set()
@@ -14,16 +13,17 @@ class Servant(object):
     def isIdle(self):
         return not self.threads
 
-    def do(self, task, *args):
+    def do(self, function, *args):
         if self.watcherThread == None:
             self.watcherThread = Watcher(self)
             self.threads.add(self.watcherThread)
             self.watcherThread.start()
-        self.tasks.put(task, *args)
+        task = self.tasks.put(function, *args)
+        return task
 
-    def work():
-        while self.tasks.perform():
-            pass
+    def __call__(self, task):
+        return  ServantFunction(self, task)
+        
 
 class Watcher(threading.Thread):
     def __init__(self, servant):
@@ -87,3 +87,19 @@ servant = Servant()
 
 def do(task, *args):
     servant.do(task, *args)
+
+
+class ServantFunction:
+
+    def __init__(self, servant, task):
+        self.servant = servant
+        self.task = task
+        self.__qualname__ = self.task.__qualname__
+        self.__name__ = self.task.__name__
+
+    def __call__(self, *args, **kw):
+        return self.servant.do(self.task, args, kw)
+
+    def __get__(self, *args):
+        return self.__class__(self.servant, self.task.__get__(*args))
+        

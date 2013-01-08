@@ -3,6 +3,7 @@ import unittest
 import unittest.mock as mock
 import sys
 import threading
+import test
 
 ## modules to test
 import Tasks
@@ -10,7 +11,7 @@ import Tasks
 def handle_error(ty, err, tb):
     pass
 
-class Test_Task(unittest.TestCase):
+class Test_Task(unittest.TestCase, test.TimeoutTest):
 
     t = Tasks.Tasks.Task
 
@@ -248,12 +249,12 @@ class Test_Task(unittest.TestCase):
         self.assertEqual(pe.call_args[0][1].args, (1,2,3))
 
     def test_iterate_and_error(self):
-        @self.t
         def g():
             raise TabError('bad tabby')
+        t = self.t(g, onError = handle_error)
         for i in range(5):
             self.assertRaisesRegex(TabError, 'bad tabby',
-                                   lambda: next(g))
+                                   lambda: next(t))
 
     def test_task_does_nothing_if_generator_is_running(self):
         l = threading.Lock()
@@ -263,6 +264,7 @@ class Test_Task(unittest.TestCase):
         def f():
             v.append(0)
             l.acquire()
+            yield
             v.append(1)
         threading.Thread(target = f.perform).start()
         self.assertTimeoutEqual(v, [0])
@@ -286,7 +288,7 @@ class Test_Task(unittest.TestCase):
         p = f()
         def g():
             yield from p # ValueError: generator already executing
-        t = self.t(g)
+        t = self.t(g, onError = handle_error)
         threading.Thread(target = lambda: next(p)).start()
         self.assertEqual(t.perform(), Tasks.noResult)
         self.assertTrue(t.done)
