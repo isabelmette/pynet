@@ -167,12 +167,15 @@ class Test_SelectPoller_notify(SelectPollerTest):
 
     def SelectPoller(self, *args):
         class _SelectPoller(SelectPoller.SelectPoller):
-            def select(_self, r, w, e, timeout = None):
-                self.selected = (r[:], w[:], e[:])
-                return (r * self.selectSomething,
-                        w * self.selectSomething,
-                        e * self.selectSomething)
+            def select(_self, ):
+                return self.select(*args, **kw)
         return _SelectPoller(*args)
+
+    def select(self, r, w, e, timeout = None):
+        self.selected = (r[:], w[:], e[:])
+        return (r * self.selectSomething,
+                w * self.selectSomething,
+                e * self.selectSomething)
 
     def setUp(self):
         SelectPollerTest.setUp(self)
@@ -185,21 +188,21 @@ class Test_SelectPoller_notify(SelectPollerTest):
         mock = self.rmock
         self.poller.poll(mock)
         self.next()
-        self.assertEqual(self.poller.selected, ([mock],[],[]))
+        self.assertEqual(self.selected, ([mock],[],[]))
         self.assertEqual(mock.read, 1)
         
     def test_select_write(self):
         mock = self.wmock
         self.poller.poll(mock)
         self.next()
-        self.assertEqual(self.poller.selected, ([],[mock],[]))
+        self.assertEqual(self.selected, ([],[mock],[]))
         self.assertEqual(mock.write, 1)
     
     def test_select_exceptional(self):
         mock = self.emock
         self.poller.poll(mock)
         self.next()
-        self.assertEqual(self.poller.selected, ([],[],[mock]))
+        self.assertEqual(self.selected, ([],[],[mock]))
         self.assertEqual(mock.exceptional, 1)
 
     def assert_notified(self, mock, times):
@@ -242,6 +245,30 @@ class Test_SelectPoller_notify(SelectPollerTest):
             self.assertEqual(r.write, 1)
         for e in elist:
             self.assertEqual(r.exceptional, 1)
+
+    def test_notify_one_often(self):
+        mock = FileNoMock(1, r = True, w = True, e = True)
+        self.poller.poll(mock)
+        self.select = lambda r, w, e, timeout = None: (r, [], [])
+        self.next()
+        self.assertEqual(mock.read, 1)
+        self.assertEqual(mock.write, 0)
+        self.assertEqual(mock.exceptional, 0)
+        self.next()
+        self.assertEqual(mock.read, 2)
+        self.assertEqual(mock.write, 0)
+        self.assertEqual(mock.exceptional, 0)
+        self.select = lambda r, w, e, timeout = None: ([], w, [])
+        self.next()
+        self.assertEqual(mock.read, 2)
+        self.assertEqual(mock.write, 1)
+        self.assertEqual(mock.exceptional, 0)
+        self.select = lambda r, w, e, timeout = None: ([], w, e)
+        self.next()
+        self.next()
+        self.assertEqual(mock.read, 2)
+        self.assertEqual(mock.write, 2)
+        self.assertEqual(mock.exceptional, 1)
 
 if __name__ == '__main__':
     unittest.main(exit = False)
