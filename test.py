@@ -1,4 +1,5 @@
 import time
+import socket
 
 TIMEOUT = 0.5
 _l = object()
@@ -21,3 +22,15 @@ class TimeoutTest:
     def assertTimeoutEqual(self, value, expected, *args):
         timeout(lambda: value == expected, False)
         self.assertEqual(value, expected, *args)
+
+if hasattr(socket, 'socketpair'):
+    socketPair = socket.socketpair
+else:
+    def socketPair():
+        s = socket.socket()
+        s.bind(('localhost', 0))
+        s.listen(1)
+        s1 = socket.socket()
+        s1.connect(('localhost', s.getsockname()[1]))
+        s2, addr = s.accept()
+        assert addr[1] == s1.getsockname()[1]

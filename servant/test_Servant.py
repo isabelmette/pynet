@@ -8,7 +8,7 @@ import threading
 import Servant
 
 ## test helper
-from test import timeout, TimeoutTest
+from pynet.test import timeout, TimeoutTest
 
 
 class Test_Servant_do(unittest.TestCase, TimeoutTest):
@@ -205,7 +205,7 @@ class Test_Servant(unittest.TestCase, TimeoutTest):
         X.b(y)
         timeout(lambda: b, _b)
         self.assertEqual(b, y)
-        
+
 ##del Test_Servent_do, Test_Servent
 
 class MockThread:
@@ -276,7 +276,22 @@ class Test_Servant_Module(unittest.TestCase, TimeoutTest):
         l = []
         Servant.do(l.append, (3,))
         self.assertTimeoutEqual(l, [3])
-        
+
+    def test_def_function_for_servant(self):
+        l = []
+        @Servant.servant
+        def g():
+            l.append(1)
+            yield
+            timeout(lambda: 2 in l, False)
+            assert 2 in l
+            yield
+            l.append(3)
+        g()
+        timeout(lambda: 1 in l, False)
+        l.append(2)
+        timeout(lambda: 3 in l, False)
+        self.assertIn(3, l)
     
 if __name__ == '__main__':
     unittest.main(exit = False)

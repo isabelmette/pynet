@@ -280,10 +280,7 @@ class Test_Task(unittest.TestCase, test.TimeoutTest):
         l.acquire()
         v = []
         def f():
-            v.append(0)
             l.acquire()
-            yield
-            v.append(1)
             yield
         p = f()
         def g():
@@ -295,6 +292,7 @@ class Test_Task(unittest.TestCase, test.TimeoutTest):
         self.assertTrue(t.failed)
         self.assertEqual(t.exceptionType, ValueError)
         self.assertEqual(t.exception.args[0], 'generator already executing')
+        l.release()
 
 def f():
     yield 1
