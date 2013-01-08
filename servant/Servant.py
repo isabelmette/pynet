@@ -1,5 +1,5 @@
 import threading
-import Tasks
+import pynet.servant.Tasks as Tasks
 import time
 
 

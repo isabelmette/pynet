@@ -40,12 +40,11 @@ class Connection:
 
 class SelectPollerTest(unittest.TestCase):
 
-    SelectPoller = SelectPoller
+    SelectPoller = SelectPoller.SelectPoller
     
     @property
     def Servant(self):
         class Servant:
-            @staticmethod
             def do(_self, func, args = (), kw = {}):
                 self.generator = func(*args, **kw)
         return Servant
@@ -54,8 +53,8 @@ class SelectPollerTest(unittest.TestCase):
         return next(self.generator)
 
     def setUp(self):
-        self.generator = None
-        self.poller = self.SelectPoller(self.Servant)
+        self.generator = 'not set'
+        self.poller = self.SelectPoller(self.Servant())
 
     def createConnectionPair(self):
         self.s1, self.s2 = test.socketPair()
@@ -75,8 +74,7 @@ class Test_SelectPoller_IO(SelectPollerTest, test.TimeoutTest):
         self.s2.close()
 
     def test_get_notified_for_read(self):
-        self.s1.write(b'hallo')
-        self.s1.flush()
+        self.s1.sendall(b'hallo')
         self.assertTimeoutEqual(self.next, 'tritratrullala - read')
         self.assertEqual(self.c1.data, b'hallo')
         self.assertEqual(self.c1.read, 1)
@@ -93,10 +91,8 @@ class Test_SelectPoller_IO(SelectPollerTest, test.TimeoutTest):
         self.assertNotEqual(self.next(), 'tritratrullala - exceptional')
 
     def test_write_to_both_sockets(self):
-        self.s1.write(b'1')
-        self.s1.flush()
-        self.s2.write(b'2')
-        self.s2.flush()
+        self.s1.sendall(b'1')
+        self.s2.sendall(b'2')
         self.next()
         self.next()
         self.assertEqual(self.c1.data, b'2')
@@ -120,27 +116,26 @@ class FileNoMock:
                 self.write += 1
                 self.notified += 1
             self.notifyWrite = notifyWrite
-        if x:
+        if e:
             def notifyExceptional(self):
                 self.exceptional += 1
                 self.notified += 1
             self.notifyExceptional = notifyExceptional
             
-    def fileno():
+    def fileno(self):
         return self._f
 
 class Test_SelectPoller(SelectPollerTest):
 
     def test_poller_does_not_poll_if_there_is_nothing_to_poll(self):
-        self.assertEqual(self.generator, None)
+        self.assertEqual(self.generator, 'not set')
         
     def test_stops_polling_if_nothing_to_poll(self):
         self.createConnectionPair()
         self.poller.poll(self.c2)
-        self.c1.write('hallo')
-        self.c1.flush()
+        self.s1.sendall(b'hallo')
         self.next()
-        self.poller.remove(self.c1)
+        self.poller.remove(self.c2)
         self.assertRaises(StopIteration, self.next)
 
     def test_poll_no_fileno(self):
@@ -158,7 +153,7 @@ class Test_SelectPoller(SelectPollerTest):
     def test_poll_no_notifyMethods(self):
         m = FileNoMock(1)
         self.assertRaisesRegex(AttributeError,
-                               "{0} must have some of the attributes"
+                               "{0} must have at least one of the attributes"
                                " 'notifyRead' 'notifyWrite' "
                                "'notifyExceptional'".format(m), 
                                lambda: self.poller.poll(m))
