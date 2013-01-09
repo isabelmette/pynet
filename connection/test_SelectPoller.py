@@ -265,5 +265,11 @@ class Test_SelectPoller_notify(SelectPollerTest):
         self.assertEqual(mock.write, 2)
         self.assertEqual(mock.exceptional, 1)
 
+    def test_remove(self):
+        self.poller.poll(self.rmock)
+        self.poller.remove(self.rmock)
+        self.assertRaises(ValueError, lambda: self.poller.remove(self.rmock))
+        self.assertRaises(StopIteration, lambda: self.next())
+
 if __name__ == '__main__':
     unittest.main(exit = False)
