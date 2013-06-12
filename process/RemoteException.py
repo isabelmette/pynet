@@ -1,3 +1,4 @@
+# for using standalone use https://gist.github.com/niccokunzmann/5763860
 import sys
 import traceback
 import StringIO
