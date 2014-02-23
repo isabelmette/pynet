@@ -1,4 +1,3 @@
-
 .. |step1| image:: https://github.com/amintos/akira/raw/playground/documentation/images/send_object_to_friend/step1.png
 .. |step2| image:: https://github.com/amintos/akira/raw/playground/documentation/images/send_object_to_friend/step2.png
 .. |step3| image:: https://github.com/amintos/akira/raw/playground/documentation/images/send_object_to_friend/step3.png
@@ -23,7 +22,7 @@ then give your friend the code printed:
 
 |step2|
 
-Your friend has now your object and you can append something:
+Your friend has now your object and can append something:
 
 |step3|
 
